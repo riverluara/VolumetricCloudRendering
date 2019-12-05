@@ -62,8 +62,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Cloud.cs" />
     <Compile Include="Assets\Scripts\CloudBaseEditor.cs" />
     <Compile Include="Assets\Scripts\NoiseGenerator.cs" />
+    <None Include="Assets\Shaders\CloudBlending.shader" />
     <None Include="Assets\Shaders\CloudRendering.shader" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Weihao/Desktop/YJ/homework/Graphics/CloudRendering/VolumetricCloudRendering/FinalProject/CloudRendering/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>

@@ -59,6 +59,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: 852a85a07ed9e1640a0a03e603eb7829, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -68,26 +72,49 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _AmbientStrength: 2
     - _BumpScale: 1
-    - _CloudBaseScale: 1
-    - _CloudDetailScale: 1
-    - _CloudWeatherScale: 1
+    - _CloudBaseScale: 1.839
+    - _CloudCoverage: 0.428
+    - _CloudDetailScale: 0.992
+    - _CloudShapeDirection: 0
+    - _CloudTransmittance: 0.01
+    - _CloudWeatherDirection: 1
+    - _CloudWeatherScale: 4.49
     - _Cutoff: 0.5
+    - _DensityClampHigh: 1.5
+    - _DensityClampLow: 0.1
     - _DensityCutoff: 0
+    - _DetailErodeStrength: 0.3
     - _DetailNormalMapScale: 1
+    - _DirectionalSpread: 30
+    - _DirectionalStrength: 4
     - _DstBlend: 0
+    - _EarthRadius: 6400000
+    - _FinalAdjust: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _HigherHeight: 7000
+    - _LightAdjust: 10
+    - _LowDensityThreshold: 0.05
+    - _LowerHeighet: 500
+    - _LowerHeight: 500
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _PowderFactor: 0.02
+    - _SampleSize: 128
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _ThicknessDebug: 1
     - _UVSec: 0
+    - _UpperHeight: 7000
+    - _ViewRange: 200000
     - _ZWrite: 1
     m_Colors:
+    - _AmbientColor: {r: 0.3226237, g: 0.40242746, b: 0.4716981, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
