@@ -8,11 +8,13 @@ public class Cloud : MonoBehaviour
     public Material cloudBlending;
     private Camera cam;
     private RenderTexture cloud;
+    private RenderTexture cloudLastFrame;
     private Matrix4x4 previousVP;
     // Start is called before the first frame update
     void Start()
     {
-        
+        previousVP = Camera.main.projectionMatrix * Camera.main.worldToCameraMatrix;
+        //cloud = RenderTexture.active;
     }
 
     // Update is called once per frame
@@ -26,15 +28,21 @@ public class Cloud : MonoBehaviour
         cam = GetComponent<Camera>();
         cam.depthTextureMode = DepthTextureMode.Depth;
         cloud = new RenderTexture(1920, 1080, 24, RenderTextureFormat.Default);
+        cloudLastFrame = new RenderTexture(1920, 1080, 24, RenderTextureFormat.Default);
+        //cloud = RenderTexture.active;
     }
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         cloudRendering.SetVector("_CameraPos", transform.position);
-        
+        cloudRendering.SetMatrix("_LastVP", previousVP);
+        cloudRendering.SetTexture("_LastCloudTex", cloudLastFrame);
         CustomBlit(null, cloud, cloudRendering);
+        Graphics.CopyTexture(cloud, cloudLastFrame);
+        
         cloudBlending.SetTexture("_CloudTex", cloud);
         //Blend the cloud texture with background
         Graphics.Blit(source, destination, cloudBlending);
+        previousVP = previousVP = Camera.main.projectionMatrix * Camera.main.worldToCameraMatrix;;
     }
 
     void CustomBlit(RenderTexture source, RenderTexture dest, Material mat)
@@ -45,13 +53,15 @@ public class Cloud : MonoBehaviour
 
         float fovWHalf = camFov * 0.5f;
 
-        Vector3 toRight = cam.transform.right * Mathf.Tan(fovWHalf * Mathf.Deg2Rad) * camAspect;
-        Vector3 toTop = cam.transform.up * Mathf.Tan(fovWHalf * Mathf.Deg2Rad);
+        var cameraTransform = cam.transform;
+        Vector3 toRight = camAspect * Mathf.Tan(fovWHalf * Mathf.Deg2Rad) * cameraTransform.right;
+        Vector3 toTop = Mathf.Tan(fovWHalf * Mathf.Deg2Rad) * cameraTransform.up;
         //direction of rays
-        Vector3 topLeft = (cam.transform.forward - toRight + toTop);
-        Vector3 topRight = (cam.transform.forward + toRight + toTop);
-        Vector3 bottomRight = (cam.transform.forward + toRight - toTop);
-        Vector3 bottomLeft = (cam.transform.forward - toRight - toTop);
+        var forward = cameraTransform.forward;
+        Vector3 topLeft = forward - toRight + toTop;
+        Vector3 topRight = forward + toRight + toTop;
+        Vector3 bottomRight = forward + toRight - toTop;
+        Vector3 bottomLeft = forward - toRight - toTop;
 
         RenderTexture.active = dest;
 

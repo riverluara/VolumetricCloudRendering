@@ -43,8 +43,13 @@
 		_CloudWeatherDirection("Cloud Weather Direction", Range(0,360)) = 1
 
 		[Header(Optimization)]
-		_SampleSize("Sample Size", Range(64, 128)) = 64
+		_SampleSize("Sample Size", Range(16, 1024)) = 64
 		_LowDensityThreshold("Low Density Threshold",Range(0,0.2)) = 0.05
+		_TemporalBlendFactor("Temporal Blend Factor", Range(0.0, 1.0)) = 0.05
+		
+		[Header(Demo Debug Options)]
+		[Toggle] _RandomStepSize("Random Step Size", Float) = 1
+		[Toggle] _TemporalUpsample("Temporal Upsample", Float) = 1
 
     }
     SubShader
@@ -72,6 +77,8 @@
 			float _EarthRadius;
 			float _ViewRange;
 			float _SampleSize;
+			
+			float4x4 _LastVP;
 
 			sampler3D _CloudBase;
 			sampler3D _CloudDetail;
@@ -103,6 +110,11 @@
 			sampler2D _NoiseTex;
 			
 			float _LowDensityThreshold;
+			float _TemporalBlendFactor;
+			sampler2D _LastCloudTex;
+			
+			float _RandomStepSize;
+			float _TemporalUpsample;
 
             struct appdata
             {
@@ -147,7 +159,6 @@
 				}
 				if (_CameraPos.y > _UpperHeight)
 				{
-
 					startT = tHigh.x;
 					endT = tLow.x;
 					if (tLow.x == MAX_FLOAT) {
@@ -156,7 +167,6 @@
 				}
 				if (_CameraPos.y < _LowerHeight)
 				{
-
 					startT = tLow.y;
 					endT = tHigh.y;
 				}
@@ -287,12 +297,18 @@
 				float3 stepVectorTMP = stepVector;
 				float3 stepSizeTMP = stepSize;
 				float3 baseColor = 0;
-
+                
 				for (int i = 0; i < sampleStep; i++)
 				{
-					//Random step size to avoid banding
-					//float random = tex2Dlod(_NoiseTex, float4(frac(rayPos.y + _SinTime.x), frac(rayPos.x + _SinTime.y), 0, 0)).r;
-					rayPos = rayPos + stepVectorTMP ;
+				    if (_RandomStepSize > 0.5f)
+				    {
+				        float random = tex2Dlod(_NoiseTex, float4(frac(rayPos.y + _Time.x), frac(rayPos.x + _Time.y), 0, 0)).r;
+					    rayPos = rayPos + stepVectorTMP * random * 2;
+				    }
+				    else
+				    {
+				        rayPos = rayPos + stepVectorTMP;
+				    }
 
 					//Quit if out of view range
 					if (length(rayPos - _CameraPos) > _ViewRange) break;
@@ -393,8 +409,18 @@
 				float4 currentFrameCol = RayMarching(rayMarchingStart, rayMarchingEnd, _SampleSize, lightDir);
 				//fixed a =  density.r * 0.299 + density.g * 0.587 + density.b * 0.114;
 				//clip(a - _DensityCutoff);
+				
+				float4 reprojectionPoint = float4((rayMarchingStart + rayMarchingEnd) / 2,1);
+                float4 lastFrameClipCoord = mul(_LastVP, reprojectionPoint);
+                float2 lastFrameUV  = float2(lastFrameClipCoord.x / lastFrameClipCoord.w, lastFrameClipCoord.y / lastFrameClipCoord.w)* 0.5 + 0.5;
 
-                return currentFrameCol;
+				float4 lastFrameCol = tex2D(_LastCloudTex, lastFrameUV);
+                //return lastFrameCol;
+                //return currentFrameCol;
+                if (_TemporalUpsample > 0.5f)
+                    return currentFrameCol * _TemporalBlendFactor + lastFrameCol * (1 - _TemporalBlendFactor);
+                else
+                    return currentFrameCol;
             }
             ENDCG
         }
