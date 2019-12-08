@@ -50,6 +50,8 @@
 		[Header(Demo Debug Options)]
 		[Toggle] _RandomStepSize("Random Step Size", Float) = 1
 		[Toggle] _TemporalUpsample("Temporal Upsample", Float) = 1
+		[Toggle] _EarlyExit("Early Exit Optimization", Float) = 1
+		[Toggle] _ShowEarlyExit("Show Early Exit", Float) = 0
 
     }
     SubShader
@@ -115,6 +117,8 @@
 			
 			float _RandomStepSize;
 			float _TemporalUpsample;
+			float _EarlyExit;
+			float _ShowEarlyExit;
 
             struct appdata
             {
@@ -331,18 +335,21 @@
 						stepSizeTMP = stepSize;
 						stepVectorTMP = stepVector;
 					}
-
-					//If we have several sequential low density sampling result, change to cheaper sampling
-					if (cumuLowDensity >= 5) cheap = true;
-
-					//If transmittance is low enough, change to cheap samling
-					//if (light.a < 0.3) cheap = true;
-
-					//Increasing step size if continuously get low density result
-					if (cumuLowDensity >= 15 && cumuLowDensity % 15 == 0)
+					
+					if (_EarlyExit > 0.5f)
 					{
-						stepSizeTMP *= 1.5;
-						stepVectorTMP *= 1.5;
+                        //If we have several sequential low density sampling result, change to cheaper sampling
+                        if (cumuLowDensity >= 5) cheap = true;
+    
+                        //If transmittance is low enough, change to cheap samling
+                        //if (light.a < 0.3) cheap = true;
+    
+                        //Increasing step size if continuously get low density result
+                        if (cumuLowDensity >= 15 && cumuLowDensity % 15 == 0)
+                        {
+                            stepSizeTMP *= 1.5;
+                            stepVectorTMP *= 1.5;
+                        }
 					}
 
 					//If sampling mode is cheap, we do not sample towards the sun
@@ -360,9 +367,19 @@
 					light.a *= transmittanceCurrent;
 
 					//Early exit
-					if (rayPos.y > _UpperHeight && start.y < end.y) break;
-					if (rayPos.y < _LowerHeight && start.y > end.y) break;
-					if (light.a < 0.05) break;
+					if (_EarlyExit > 0.5f)
+					{
+					    if (rayPos.y > _UpperHeight && start.y < end.y) break;
+                        if (rayPos.y < _LowerHeight && start.y > end.y) break;
+                        if (light.a < 0.05)
+                        {
+                            if (_ShowEarlyExit)
+                            {
+                                return float4(1.0f, 0.0f, 0.0f, 0.0f);
+                            }
+                            break;
+                        }
+					}
 
 				}
 
@@ -415,6 +432,9 @@
                 float2 lastFrameUV  = float2(lastFrameClipCoord.x / lastFrameClipCoord.w, lastFrameClipCoord.y / lastFrameClipCoord.w)* 0.5 + 0.5;
 
 				float4 lastFrameCol = tex2D(_LastCloudTex, lastFrameUV);
+				
+				if (lastFrameUV.x < 0 || lastFrameUV.x > 1 || lastFrameUV.y < 0 || lastFrameUV.y > 1)
+				    _TemporalBlendFactor = 1;
                 //return lastFrameCol;
                 //return currentFrameCol;
                 if (_TemporalUpsample > 0.5f)
