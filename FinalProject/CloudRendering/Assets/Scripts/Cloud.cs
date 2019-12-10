@@ -10,6 +10,8 @@ public class Cloud : MonoBehaviour
     private RenderTexture cloud;
     private RenderTexture cloudLastFrame;
     private Matrix4x4 previousVP;
+
+    public RenderTexture skybox;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,11 +33,13 @@ public class Cloud : MonoBehaviour
         cloudLastFrame = new RenderTexture(1920, 1080, 24, RenderTextureFormat.Default);
         //cloud = RenderTexture.active;
     }
+
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         cloudRendering.SetVector("_CameraPos", transform.position);
         cloudRendering.SetMatrix("_LastVP", previousVP);
         cloudRendering.SetTexture("_LastCloudTex", cloudLastFrame);
+        cloudRendering.SetTexture("_SkyboxTex", skybox);
         CustomBlit(null, cloud, cloudRendering);
         Graphics.CopyTexture(cloud, cloudLastFrame);
         

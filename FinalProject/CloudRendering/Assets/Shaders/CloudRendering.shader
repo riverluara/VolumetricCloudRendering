@@ -115,6 +115,8 @@
 			float _TemporalBlendFactor;
 			sampler2D _LastCloudTex;
 			
+			sampler2D _SkyboxTex;
+			
 			float _RandomStepSize;
 			float _TemporalUpsample;
 			float _EarlyExit;
@@ -262,9 +264,26 @@
 				const float F = 0.30;
 				return ((x*(A*x + C * B) + D * E) / (x*(A*x + B) + D * F)) - E / F;
 			}
+			
+			// Atmosphere Scattering
+			
+			// Phase Function
+			// For Rayleigh g = 0
+			// For Mie, g = -0.75 ~ -0.999
+			float atmosphere_phase(float theta, float g)
+			{
+			    float g2 = g * g;
+			    float cos_theta = cos(theta);
+			    float cos2theta = cos_theta * cos_theta;
+			    float f = (3 * (1 - g2)) / (2 * (2 + g2)) * (1 + cos2theta) / pow(1 + g2 - 2 * g * cos_theta, 1.5f);
+			}
+			
+			float4 get_atmosphere_color()
+			{
+			}
 
 			//Main ray marching process
-			float4 RayMarching(float3 start, float3 end, int sampleStep, float3 lightDir)
+			float4 RayMarching(float3 start, float3 end, int sampleStep, float3 lightDir, float4 ambientColor)
 			{
 
 				float3 stepVector = (end - start) / (float)sampleStep;
@@ -351,12 +370,12 @@
                             stepVectorTMP *= 1.5;
                         }
 					}
-
+					
 					//If sampling mode is cheap, we do not sample towards the sun
-					if (cheap) { baseColor = _AmbientColor.rgb; }
+					if (cheap) { baseColor = ambientColor.rgb; }
 					else
 					{
-						baseColor = _AmbientColor.rgb + SampleSunLight(rayPos, lightDir, density, sinS, cosS, sinW, cosW) * (float3(1.0, 1.0, 1.0) * _AmbientStrength + directionalScattering);
+						baseColor = ambientColor.rgb + SampleSunLight(rayPos, lightDir, density, sinS, cosS, sinW, cosW) * (float3(1.0, 1.0, 1.0) * _AmbientStrength + directionalScattering);
 					}
 
 					//Powder effect calculation
@@ -404,6 +423,8 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
+                float4 ambientColor = tex2D(_SkyboxTex, i.uv - float2(0.0f, 0.02f));
+                
                 // sample the texture
                 fixed4 cloudBaseTexture = tex3D(_CloudBase, i.modelPos.xyz);
 			    fixed4 cloudDetailTexture = tex3D(_CloudDetail, i.modelPos.xyz);
@@ -421,9 +442,9 @@
 				//find interset point of two spheres
 				findSNE(i.interpolatedRay, rayMarchingStart, rayMarchingEnd);
 
-
+                
 				//ray marching 
-				float4 currentFrameCol = RayMarching(rayMarchingStart, rayMarchingEnd, _SampleSize, lightDir);
+				float4 currentFrameCol = RayMarching(rayMarchingStart, rayMarchingEnd, _SampleSize, lightDir, ambientColor);
 				//fixed a =  density.r * 0.299 + density.g * 0.587 + density.b * 0.114;
 				//clip(a - _DensityCutoff);
 				
