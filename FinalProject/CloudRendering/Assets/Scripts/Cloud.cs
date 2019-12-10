@@ -12,6 +12,8 @@ public class Cloud : MonoBehaviour
     private Matrix4x4 previousVP;
 
     public RenderTexture skybox;
+
+    public GameObject directionalLight;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,6 +42,8 @@ public class Cloud : MonoBehaviour
         cloudRendering.SetMatrix("_LastVP", previousVP);
         cloudRendering.SetTexture("_LastCloudTex", cloudLastFrame);
         cloudRendering.SetTexture("_SkyboxTex", skybox);
+        cloudRendering.SetFloat("_FinalAdjust", Vector3.Dot(directionalLight.transform.forward, Vector3.down) * 0.4f);
+        cloudRendering.SetFloat("_DiffFactor", Vector3.Dot(directionalLight.transform.forward, Camera.main.transform.forward));
         CustomBlit(null, cloud, cloudRendering);
         Graphics.CopyTexture(cloud, cloudLastFrame);
         

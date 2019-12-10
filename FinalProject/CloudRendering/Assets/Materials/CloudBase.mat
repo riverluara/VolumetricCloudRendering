@@ -94,12 +94,12 @@ Material:
     - _EarlyExit: 1
     - _EarthRadius: 6400000
     - _Exposure: 1.3
-    - _FinalAdjust: 0
+    - _FinalAdjust: -0.040538065
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _HigherHeight: 7000
-    - _LightAdjust: 5
+    - _LightAdjust: 6.1
     - _LowDensityThreshold: 0.05
     - _LowerHeighet: 500
     - _LowerHeight: 500

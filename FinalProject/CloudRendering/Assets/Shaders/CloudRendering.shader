@@ -116,6 +116,7 @@
 			sampler2D _LastCloudTex;
 			
 			sampler2D _SkyboxTex;
+			float _DiffFactor;
 			
 			float _RandomStepSize;
 			float _TemporalUpsample;
@@ -250,7 +251,7 @@
 				//The higher density differece is, the higher the sun light is received at this point
 				diff *= saturate((1 - newDensity * 2));
 
-				return diff;
+				return diff / lerp(100, 1, _DiffFactor / 2 + 0.5);
 			}
 
 			//Tome mapping from Uncharted
@@ -263,23 +264,6 @@
 				const float E = 0.02;
 				const float F = 0.30;
 				return ((x*(A*x + C * B) + D * E) / (x*(A*x + B) + D * F)) - E / F;
-			}
-			
-			// Atmosphere Scattering
-			
-			// Phase Function
-			// For Rayleigh g = 0
-			// For Mie, g = -0.75 ~ -0.999
-			float atmosphere_phase(float theta, float g)
-			{
-			    float g2 = g * g;
-			    float cos_theta = cos(theta);
-			    float cos2theta = cos_theta * cos_theta;
-			    float f = (3 * (1 - g2)) / (2 * (2 + g2)) * (1 + cos2theta) / pow(1 + g2 - 2 * g * cos_theta, 1.5f);
-			}
-			
-			float4 get_atmosphere_color()
-			{
 			}
 
 			//Main ray marching process
