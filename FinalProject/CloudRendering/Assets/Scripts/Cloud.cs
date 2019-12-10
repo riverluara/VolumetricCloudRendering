@@ -43,7 +43,6 @@ public class Cloud : MonoBehaviour
         cloudRendering.SetTexture("_LastCloudTex", cloudLastFrame);
         cloudRendering.SetTexture("_SkyboxTex", skybox);
         cloudRendering.SetFloat("_FinalAdjust", Vector3.Dot(directionalLight.transform.forward, Vector3.down) * 0.4f);
-        cloudRendering.SetFloat("_DiffFactor", Vector3.Dot(directionalLight.transform.forward, Camera.main.transform.forward));
         CustomBlit(null, cloud, cloudRendering);
         Graphics.CopyTexture(cloud, cloudLastFrame);
         

@@ -116,7 +116,6 @@
 			sampler2D _LastCloudTex;
 			
 			sampler2D _SkyboxTex;
-			float _DiffFactor;
 			
 			float _RandomStepSize;
 			float _TemporalUpsample;
@@ -251,7 +250,7 @@
 				//The higher density differece is, the higher the sun light is received at this point
 				diff *= saturate((1 - newDensity * 2));
 
-				return diff / lerp(100, 1, _DiffFactor / 2 + 0.5);
+				return diff / lerp(100, 1, dot(normalize(lightDir), normalize(rayPos - _CameraPos)) / 2 + 0.5);
 			}
 
 			//Tome mapping from Uncharted
